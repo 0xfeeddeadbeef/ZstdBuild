@@ -45,21 +45,9 @@ jobs:
           LDFLAGS: "-Xlinker -Bsymbolic"
       - name: CMake (Windows)
         if: ${{ success() && matrix.os == 'windows-2022' }}
-        uses: threeal/cmake-action@v2
-        with:
-          generator: Ninja
-          c-compiler: cl
-          cxx-compiler: cl
-          source-dir: build/cmake
-          build-dir: build/cmake
-          options: |
-            CMAKE_BUILD_TYPE=Release
-            CMAKE_MAKE_PROGRAM=ninja
-            ZSTD_BUILD_PROGRAMS=OFF
-            ZSTD_BUILD_TESTS=OFF
-            ZSTD_MULTITHREAD_SUPPORT=ON
-            ZSTD_USE_STATIC_RUNTIME=ON
-            ZSTD_LEGACY_SUPPORT=ON
+        run: |
+          Set-Location build\cmake
+          & "C:\Program Files\CMake\bin\cmake.exe" -G Ninja -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=ninja -DZSTD_BUILD_PROGRAMS=OFF -DZSTD_BUILD_TESTS=OFF -DZSTD_MULTITHREAD_SUPPORT=ON -DZSTD_USE_STATIC_RUNTIME=ON -DZSTD_LEGACY_SUPPORT=ON
       - name: Upload (Linux)
         if: ${{ success() && matrix.os == 'ubuntu-20.04' }}
         uses: actions/upload-artifact@v4
