@@ -50,6 +50,7 @@ jobs:
           generator: Ninja
           c-compiler: cl
           cxx-compiler: cl
+          source-dir: build/cmake
           build-dir: build/cmake
           options: |
             CMAKE_BUILD_TYPE=Release
