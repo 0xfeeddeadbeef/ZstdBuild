@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-20.04' ]
+        os: [ 'ubuntu-20.04', 'windows-2022' ]
     runs-on: ${{ matrix.os }}
     name: Build on ${{ matrix.os }}
     steps:
@@ -20,17 +20,54 @@ jobs:
           submodules: recursive
           show-progress: false
           persist-credentials: false
-      - name: 'Setup Visual C++'
+      - name: Setup Ninja (Windows)
+        if: ${{ success() && matrix.os == 'windows-2022' }}
+        uses: seanmiddleditch/gha-setup-ninja@v5
+      - name: Setup Visual C++
         if: ${{ success() && matrix.os == 'windows-2022' }}
         uses: TheMrMilchmann/setup-msvc-dev@v3
         with:
           arch: x64
-      - name: Make
+      - name: Configure vcpkg (Windows)
+        if: ${{ success() && matrix.os == 'windows-2022' }}
+        run: |
+          echo "VCPKG_TARGET_ARCHITECTURE=x64" >> "$($env:GITHUB_ENV)"
+          echo "VCPKG_ROOT=$($env:VCPKG_INSTALLATION_ROOT)" >> "$($env:GITHUB_ENV)"
+          echo "VCPKG_CRT_LINKAGE=static" >> "$($env:GITHUB_ENV)"
+          echo "VCPKG_BUILD_TYPE=release" >> "$($env:GITHUB_ENV)"
+          echo "VCPKG_LIBRARY_LINKAGE=dynamic" >> "$($env:GITHUB_ENV)"
+          echo "VCPKG_CMAKE_SYSTEM_NAME=Windows" >> "$($env:GITHUB_ENV)"
+      - name: Make (Linux)
         if: ${{ success() && matrix.os == 'ubuntu-20.04' }}
         run: make lib-mt
+        env:
+          CFLAGS: "-Xlinker -Bsymbolic"
+          LDFLAGS: "-Xlinker -Bsymbolic"
+      - name: CMake (Windows)
+        if: ${{ success() && matrix.os == 'windows-2022' }}
+        uses: threeal/cmake-action@v2
+        with:
+          generator: Ninja
+          c-compiler: cl
+          cxx-compiler: cl
+          build-dir: build/cmake
+          options: |
+            CMAKE_BUILD_TYPE=Release
+            CMAKE_MAKE_PROGRAM=ninja
+            ZSTD_BUILD_PROGRAMS=OFF
+            ZSTD_BUILD_TESTS=OFF
+            ZSTD_MULTITHREAD_SUPPORT=ON
+            ZSTD_USE_STATIC_RUNTIME=ON
+            ZSTD_LEGACY_SUPPORT=ON
       - name: Upload (Linux)
         if: ${{ success() && matrix.os == 'ubuntu-20.04' }}
         uses: actions/upload-artifact@v4
         with:
           name: libs-linux
           path: 'lib/**/*.so*'
+      - name: Upload (Windows)
+        if: ${{ success() && matrix.os == 'windows-2022' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-windows
+          path: 'build/cmake/**/*.dll'
