@@ -1,0 +1,36 @@
+name: Build
+on: workflow_dispatch
+
+jobs:
+  Build-in-Matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ 'ubuntu-20.04' ]
+    runs-on: ${{ matrix.os }}
+    name: Build on ${{ matrix.os }}
+    steps:
+      - name: Clone
+        uses: actions/checkout@v4
+        with:
+          repository: facebook/zstd
+          ref: refs/tags/v1.5.6
+          clean: true
+          fetch-depth: 1
+          submodules: recursive
+          show-progress: false
+          persist-credentials: false
+      - name: 'Setup Visual C++'
+        if: ${{ success() && matrix.os == 'windows-2022' }}
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x64
+      - name: Make
+        if: ${{ success() && matrix.os == 'ubuntu-20.04' }}
+        run: make lib-mt
+      - name: Upload (Linux)
+        if: ${{ success() && matrix.os == 'ubuntu-20.04' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: libs-linux
+          path: 'lib/**/*.so*'
