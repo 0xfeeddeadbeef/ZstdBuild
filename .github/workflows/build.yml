@@ -76,3 +76,23 @@ jobs:
       with:
         name: libs-windows
         path: '**/*.dll'
+    - name: Release (Linux)
+      if: ${{ success() && matrix.os == 'ubuntu-20.04' }}
+      uses: softprops/action-gh-release@v2
+      with:
+        files: '**/libzstd.so'
+        prerelease: true
+        name: zstd-v1.5.6
+        fail_on_unmatched_files: true
+        body: |
+          Test release of build assets
+    - name: Release (Windows)
+      if: ${{ success() && matrix.os == 'windows-2022' }}
+      uses: softprops/action-gh-release@v2
+      with:
+        files: '**/build/zstd.dll'
+        prerelease: true
+        name: zstd-v1.5.6
+        fail_on_unmatched_files: true
+        body: |
+          Test release of build assets
