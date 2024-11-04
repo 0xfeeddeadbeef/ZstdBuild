@@ -83,6 +83,7 @@ jobs:
         files: '**/libzstd.so'
         prerelease: true
         name: zstd-v1.5.6
+        tag_name: v1.5.6
         fail_on_unmatched_files: true
         body: |
           Test release of build assets
@@ -93,6 +94,7 @@ jobs:
         files: '**/build/zstd.dll'
         prerelease: true
         name: zstd-v1.5.6
+        tag_name: v1.5.6
         fail_on_unmatched_files: true
         body: |
           Test release of build assets
